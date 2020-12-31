@@ -1,0 +1,61 @@
+---
+
+version: '2.4'
+
+services:
+  authenticate:
+    restart: unless-stopped
+    image: basic-oauth2
+    build: ../..
+    environment:
+      BASIC_OAUTH2_CLIENT_IDENT: oauth2-proxy
+      BASIC_OAUTH2_CLIENT_SECRET: proxy
+      BASIC_OAUTH2_CLIENT_REDIRECT_URI: http://127.0.0.1:4180/oauth2/callback
+
+      BASIC_OAUTH2_PRINCIPAL_IDENT: username
+      BASIC_OAUTH2_PRINCIPAL_PASSWORD: '{SHA}W6ph5Mm5Pz8GgiULbPgzG37mj9g='
+
+      BASIC_OAUTH2_ISSUER_URL: http://authenticate:9096
+      BASIC_OAUTH2_AUTH_BASE_URL: http://127.0.0.1:9096/
+      BASIC_OAUTH2_EMAIL_DOMAIN: example.com
+
+      BASIC_OAUTH2_KEY_GENERATE: 'true'
+    ports:
+      - '127.0.0.1:9096:9096'
+    volumes:
+      - '../../out/basic-oauth2:/bin/basic-oauth2'
+  proxy:
+    restart: unless-stopped
+    image: quay.io/oauth2-proxy/oauth2-proxy
+    environment:
+      OAUTH2_PROXY_UPSTREAMS: http://app:80/
+      OAUTH2_PROXY_HTTP_ADDRESS: 0.0.0.0:4180
+      OAUTH2_PROXY_COOKIE_SECRET: 'RyfvT4cdnN0wc2Ud2CxnwA=='
+      OAUTH2_PROXY_COOKIE_SECURE: 'false'
+
+      OAUTH2_PROXY_PROVIDER: oidc
+      OAUTH2_PROXY_CLIENT_ID: 'oauth2-proxy'
+      OAUTH2_PROXY_CLIENT_SECRET: 'proxy'
+      OAUTH2_PROXY_PROVIDER_DISPLAY_NAME: "Basic OAuth2"
+      OAUTH2_PROXY_REDIRECT_URL: http://127.0.0.1:4180/oauth2/callback
+      OAUTH2_PROXY_OIDC_ISSUER_URL: http://authenticate:9096
+
+      OAUTH2_PROXY_INSECURE_OIDC_ALLOW_UNVERIFIED_EMAIL: 'true'
+      OAUTH2_PROXY_EMAIL_DOMAINS: 'example.com'
+
+      OAUTH2_PROXY_AUTH_LOGGING: 'true'
+      OAUTH2_PROXY_REQUEST_LOGGING: 'true'
+      OAUTH2_PROXY_STANDARD_LOGGING: 'true'
+
+      OAUTH2_PROXY_BANNER: '-'
+      OAUTH2_PROXY_FOOTER: '-'
+    ports:
+      - '127.0.0.1:4180:4180'
+    depends_on:
+      - app
+      - authenticate
+  app:
+    restart: unless-stopped
+    image: nginx
+    ports:
+      - '127.0.0.1:8081:80'

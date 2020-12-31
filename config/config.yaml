@@ -1,0 +1,5 @@
+---
+
+clients_file: clients.yaml
+principals_file: principals.yaml
+principals_htpasswd: principals.htpasswd

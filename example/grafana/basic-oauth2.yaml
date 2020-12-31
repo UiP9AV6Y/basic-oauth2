@@ -1,0 +1,17 @@
+---
+
+issuer_url: http://authenticate:9096
+auth_base_url: http://localhost:9096/
+email_domain: example.com
+
+key_file: '/run/secrets/jwt.key'
+
+clients:
+  grafana:
+    secret: dashboard
+    redirect_uri: 'http://localhost:3000/login/generic_oauth'
+
+principals:
+  username:
+    password: 'password'
+    email_verified: true

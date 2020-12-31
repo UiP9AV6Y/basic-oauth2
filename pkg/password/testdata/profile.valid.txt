@@ -1,0 +1,10 @@
+# Lines that begin with the hash character "#" are considered comments,
+# and are ignored. Comments may not be included on a line after a configuration
+# directive.
+# https://httpd.apache.org/docs/2.4/configuring.html
+username:password:user@localhost.localdomain
+
+plain:password
+bcrypt:$2y$10$Hr.ji.jd4yKMr3nscluW/.3VFCtLWD/zPUjrpTbB/fFbUv.z6Sue.
+sha1:{SHA}W6ph5Mm5Pz8GgiULbPgzG37mj9g=
+md5:$apr1$761j4sdl$3iwNbmDwcmIJIkcCjlA6K.
