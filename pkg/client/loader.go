@@ -61,7 +61,7 @@ func (l *Loader) ParseFile(path string) ([]osin.Client, error) {
 	clients := make(map[string]clientData)
 	err = yaml.Unmarshal(yamlFile, clients)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to parse %q: %w", path, err)
 	}
 
 	return l.parseData(clients)

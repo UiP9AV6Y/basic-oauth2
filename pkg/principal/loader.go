@@ -74,7 +74,7 @@ func (l *Loader) ParseFile(path string) ([]Principal, error) {
 	principals := make(map[string]principalData)
 	err = yaml.Unmarshal(yamlFile, principals)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to parse %q: %w", path, err)
 	}
 
 	return l.parseData(principals)
