@@ -10,7 +10,7 @@ import (
 
 	"github.com/UiP9AV6Y/basic-oauth2/pkg/password"
 	"github.com/UiP9AV6Y/basic-oauth2/pkg/utils"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 const (
