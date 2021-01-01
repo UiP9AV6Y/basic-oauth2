@@ -8,9 +8,10 @@ import (
 	"strconv"
 	"strings"
 
+	"gopkg.in/yaml.v3"
+
 	"github.com/UiP9AV6Y/basic-oauth2/pkg/password"
 	"github.com/UiP9AV6Y/basic-oauth2/pkg/utils"
-	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -49,17 +50,19 @@ func NewPassthroughLoader() *Loader {
 func (l *Loader) ParseMap(data map[string]interface{}) ([]Principal, error) {
 	principals := make(map[string]principalData, len(data))
 	for k, v := range data {
-		d, ok := v.(map[string]interface{})
-		if !ok {
-			return nil, fmt.Errorf("malformed map entry %q", k)
+		if m, ok := v.(map[string]interface{}); ok {
+			p := &principalData{}
+			if err := p.UnmarshalMap(m); err != nil {
+				return nil, fmt.Errorf("malformed map entry %q: %w", k, err)
+			}
+			principals[k] = *p
+		} else if s, ok := v.(string); ok {
+			principals[k] = principalData{
+				Password: s,
+			}
+		} else {
+			return nil, fmt.Errorf("unsupported value format %q", k)
 		}
-
-		p := &principalData{}
-		if err := p.UnmarshalMap(d); err != nil {
-			return nil, fmt.Errorf("malformed map entry %q: %w", k, err)
-		}
-
-		principals[k] = *p
 	}
 
 	return l.parseData(principals)
