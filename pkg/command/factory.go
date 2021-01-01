@@ -19,6 +19,7 @@ func BasicOauth2() error {
 	}
 
 	cmd := NewRootCommand(name, config)
+	cmd.SilenceErrors = true
 
 	err = config.ReadInConfig()
 	if err != nil {
