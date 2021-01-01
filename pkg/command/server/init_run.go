@@ -112,3 +112,9 @@ func initRunKeyGenerate(config *viper.Viper, flags *flag.FlagSet) {
 	config.BindPFlag("key_generate", flags.Lookup("key-generate"))
 	config.BindEnv("key_generate")
 }
+
+func initRunLogLevel(config *viper.Viper, flags *flag.FlagSet) {
+	flags.String("log-level", "info", "Output verbosity")
+	config.BindPFlag("log_level", flags.Lookup("log-level"))
+	config.BindEnv("log_level")
+}

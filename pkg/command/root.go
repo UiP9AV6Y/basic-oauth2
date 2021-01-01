@@ -19,7 +19,6 @@ as means of identifying principals.`,
 		SilenceUsage: true,
 	}
 
-	initRootVerbose(config, cmd.PersistentFlags())
 	initRootVersion(config, cmd.Flags())
 
 	cmd.AddCommand(srvCmd)

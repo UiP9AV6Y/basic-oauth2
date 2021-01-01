@@ -5,6 +5,7 @@ import (
 )
 
 type Controller struct {
+	level Level
 	trace *Facility
 	debug *Facility
 	info  *Facility
@@ -13,19 +14,19 @@ type Controller struct {
 	fatal *Facility
 }
 
-func NewController(verbosity int, logger *l.Logger) *Controller {
-	switch verbosity {
-	case 0:
+func NewController(level Level, logger *l.Logger) *Controller {
+	switch level {
+	case LevelOff:
 		return NewOffController()
-	case 1:
+	case LevelFatal:
 		return NewFatalController(logger)
-	case 2:
+	case LevelError:
 		return NewErrorController(logger)
-	case 3:
+	case LevelWarn:
 		return NewWarnController(logger)
-	case 4:
+	case LevelInfo:
 		return NewInfoController(logger)
-	case 5:
+	case LevelDebug:
 		return NewDebugController(logger)
 	}
 
@@ -35,6 +36,7 @@ func NewController(verbosity int, logger *l.Logger) *Controller {
 func NewTraceController(logger *l.Logger) *Controller {
 	enabled := NewFacility(logger)
 	controller := &Controller{
+		level: LevelTrace,
 		trace: enabled,
 		debug: enabled,
 		info:  enabled,
@@ -49,6 +51,7 @@ func NewTraceController(logger *l.Logger) *Controller {
 func NewDebugController(logger *l.Logger) *Controller {
 	enabled := NewFacility(logger)
 	controller := &Controller{
+		level: LevelDebug,
 		trace: DisabledFacility,
 		debug: enabled,
 		info:  enabled,
@@ -63,6 +66,7 @@ func NewDebugController(logger *l.Logger) *Controller {
 func NewInfoController(logger *l.Logger) *Controller {
 	enabled := NewFacility(logger)
 	controller := &Controller{
+		level: LevelInfo,
 		trace: DisabledFacility,
 		debug: DisabledFacility,
 		info:  enabled,
@@ -77,6 +81,7 @@ func NewInfoController(logger *l.Logger) *Controller {
 func NewWarnController(logger *l.Logger) *Controller {
 	enabled := NewFacility(logger)
 	controller := &Controller{
+		level: LevelWarn,
 		trace: DisabledFacility,
 		debug: DisabledFacility,
 		info:  DisabledFacility,
@@ -91,6 +96,7 @@ func NewWarnController(logger *l.Logger) *Controller {
 func NewErrorController(logger *l.Logger) *Controller {
 	enabled := NewFacility(logger)
 	controller := &Controller{
+		level: LevelError,
 		trace: DisabledFacility,
 		debug: DisabledFacility,
 		info:  DisabledFacility,
@@ -105,6 +111,7 @@ func NewErrorController(logger *l.Logger) *Controller {
 func NewFatalController(logger *l.Logger) *Controller {
 	enabled := NewFacility(logger)
 	controller := &Controller{
+		level: LevelFatal,
 		trace: DisabledFacility,
 		debug: DisabledFacility,
 		info:  DisabledFacility,
@@ -118,6 +125,7 @@ func NewFatalController(logger *l.Logger) *Controller {
 
 func NewOffController() *Controller {
 	controller := &Controller{
+		level: LevelOff,
 		trace: DisabledFacility,
 		debug: DisabledFacility,
 		info:  DisabledFacility,
@@ -127,6 +135,10 @@ func NewOffController() *Controller {
 	}
 
 	return controller
+}
+
+func (c *Controller) Level() Level {
+	return c.level
 }
 
 func (c *Controller) Trace() *Facility {

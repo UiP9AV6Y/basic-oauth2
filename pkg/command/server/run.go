@@ -49,6 +49,7 @@ func NewRunCommand(config *viper.Viper) *cobra.Command {
 	config.BindEnv("key_file")
 	initRunKeySeed(config, cmd.Flags())
 	initRunKeyGenerate(config, cmd.Flags())
+	initRunLogLevel(config, cmd.Flags())
 	initRunAuthorizationExpiration(config, cmd.Flags())
 	initRunAccessExpiration(config, cmd.Flags())
 	initRunErrorStatusCode(config, cmd.Flags())
@@ -75,8 +76,14 @@ func newStringProcessor(config *viper.Viper) utils.StringProcessor {
 }
 
 func newLogger(config *viper.Viper) (*log.Controller, error) {
+	name := config.GetString("log_level")
+	level, err := log.ParseLevelName(name)
+	if err != nil {
+		return nil, err
+	}
+
 	logger := l.New(os.Stderr, "", 0)
-	controller := log.NewController(7, logger)
+	controller := log.NewController(level, logger)
 
 	return controller, nil
 }
