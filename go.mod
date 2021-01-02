@@ -11,6 +11,7 @@ require (
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.7.1
+	github.com/stretchr/testify v1.6.1
 	golang.org/x/crypto v0.0.0-20201208171446-5f87f3452ae9
 	golang.org/x/tools v0.0.0-20201211185031-d93e913c1a58
 	gopkg.in/square/go-jose.v2 v2.5.1
