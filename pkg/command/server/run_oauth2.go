@@ -1,10 +1,11 @@
 package server
 
 import (
-	"crypto/rand"
+	cr "crypto/rand"
 	"errors"
 	"fmt"
 	"io"
+	mr "math/rand"
 	"time"
 
 	"github.com/openshift/osin"
@@ -26,16 +27,17 @@ func newOauth2Secret(config *viper.Viper, logger *log.Controller) (file string, 
 		secret, err = jwt.ParseSecretFile(file)
 		return
 	} else if config.GetBool("key_generate") {
-		if seed := config.GetString("key_seed"); seed != "" {
+		if seed := config.GetInt64("key_seed"); seed > 0 {
 			logger.Info().Println("generating seeded private key")
-			source = utils.StringReader(seed)
+			source = mr.New(mr.NewSource(seed))
 		} else {
 			logger.Info().Println("generating random private key")
-			source = rand.Reader
+			source = cr.Reader
 		}
 
 		file = "generated"
-		secret, err = jwt.GenerateSecret(source, 4096)
+		size := config.GetInt("key_size")
+		secret, err = jwt.GenerateSecret(source, size)
 		return
 	}
 

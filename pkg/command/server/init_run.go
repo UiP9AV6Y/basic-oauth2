@@ -102,9 +102,15 @@ func initRunEmailVerified(config *viper.Viper, flags *flag.FlagSet) {
 }
 
 func initRunKeySeed(config *viper.Viper, flags *flag.FlagSet) {
-	flags.String("key-seed", "", "Seed for generated key. If not set, the OS crypto source will be used.")
+	flags.Int64("key-seed", 0, "Seed for generated key. If not set, the OS crypto source will be used.")
 	config.BindPFlag("key_seed", flags.Lookup("key-seed"))
 	config.BindEnv("key_seed")
+}
+
+func initRunKeySize(config *viper.Viper, flags *flag.FlagSet) {
+	flags.Uint16("key-size", 2048, "Number of bits to use for the generated key.")
+	config.BindPFlag("key_size", flags.Lookup("key-size"))
+	config.BindEnv("key_size")
 }
 
 func initRunKeyGenerate(config *viper.Viper, flags *flag.FlagSet) {
