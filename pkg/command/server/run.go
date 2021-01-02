@@ -51,6 +51,8 @@ func NewRunCommand(config *viper.Viper) *cobra.Command {
 	initRunKeySize(config, cmd.Flags())
 	initRunKeyGenerate(config, cmd.Flags())
 	initRunLogLevel(config, cmd.Flags())
+	initRunAllowedAccess(config, cmd.Flags())
+	initRunAllowedAuthorize(config, cmd.Flags())
 	initRunAuthorizationExpiration(config, cmd.Flags())
 	initRunAccessExpiration(config, cmd.Flags())
 	initRunErrorStatusCode(config, cmd.Flags())

@@ -11,6 +11,42 @@ const (
 	ErrorStatusCode         int   = 200
 )
 
+func initRunAllowedAuthorize(config *viper.Viper, flags *flag.FlagSet) {
+	f := "allow-authorize"
+	c := "allow_authorize"
+
+	flags.StringSlice(f, allowedAuthorizeTypes.FlagValues(), "Allowed authorization request types")
+	config.BindPFlag(c, flags.Lookup(f))
+	config.BindEnv(c)
+
+	for key, allowed := range allowedAuthorizeTypes {
+		aF := f + "-" + key
+		aC := c + "_" + string(allowed)
+
+		flags.Bool(aF, false, "Allow authorization selectively. See --allow-authorize")
+		config.BindPFlag(aC, flags.Lookup(aF))
+		config.BindEnv(aC)
+	}
+}
+
+func initRunAllowedAccess(config *viper.Viper, flags *flag.FlagSet) {
+	f := "allow-access"
+	c := "allow_access"
+
+	flags.StringSlice(f, allowedAccessTypes.FlagValues(), "Allowed access request types")
+	config.BindPFlag(f, flags.Lookup(f))
+	config.BindEnv(f)
+
+	for key, allowed := range allowedAccessTypes {
+		aF := f + "-" + key
+		aC := c + "_" + string(allowed)
+
+		flags.Bool(aF, false, "Allow access request selectively. See --allow-access")
+		config.BindPFlag(aC, flags.Lookup(aF))
+		config.BindEnv(aC)
+	}
+}
+
 func initRunAuthorizationExpiration(config *viper.Viper, flags *flag.FlagSet) {
 	flags.Int32("authorization-expiration", AuthorizationExpiration, "Authorization token expiration in seconds")
 	config.BindPFlag("authorization_expiration", flags.Lookup("authorization-expiration"))

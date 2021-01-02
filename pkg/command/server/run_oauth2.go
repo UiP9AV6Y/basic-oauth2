@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	mr "math/rand"
+	"strings"
 	"time"
 
 	"github.com/openshift/osin"
@@ -46,20 +47,89 @@ func newOauth2Secret(config *viper.Viper, logger *log.Controller) (file string, 
 	return
 }
 
-func newOauth2Config(config *viper.Viper) (*osin.ServerConfig, error) {
-	cfg := osin.NewServerConfig()
+func parseStringSlice(slice []string, l int) []string {
+	var values []string
 
-	cfg.AllowedAuthorizeTypes = osin.AllowedAuthorizeType{
-		osin.CODE,
-		osin.TOKEN,
+	if slice == nil {
+		return values
 	}
-	cfg.AllowedAccessTypes = osin.AllowedAccessType{
-		osin.AUTHORIZATION_CODE,
-		osin.REFRESH_TOKEN,
-		osin.PASSWORD,
-		osin.CLIENT_CREDENTIALS,
-		osin.ASSERTION,
+
+	for _, v := range slice {
+		p := strings.Split(v, ",")
+		for _, f := range p {
+			values = append(values, f)
+		}
 	}
+
+	return values
+}
+
+func newOauth2AllowedAuthorize(config *viper.Viper) (osin.AllowedAuthorizeType, error) {
+	dupes := make(map[osin.AuthorizeRequestType]bool, len(allowedAuthorizeTypes))
+	values := make([]osin.AuthorizeRequestType, 0, len(allowedAuthorizeTypes))
+	slice := config.GetStringSlice("allow_authorize")
+
+	for _, v := range parseStringSlice(slice, len(allowedAuthorizeTypes)) {
+		t, ok := allowedAuthorizeTypes[v]
+		if !ok {
+			return nil, fmt.Errorf("invalid value %q for allowed authorization", v)
+		} else if _, dupe := dupes[t]; !dupe {
+			dupes[t] = true
+			values = append(values, t)
+		}
+	}
+
+	for _, t := range allowedAuthorizeTypes {
+		if _, dupe := dupes[t]; dupe {
+			continue
+		} else if allowed := config.GetBool("allow_authorize_" + string(t)); allowed {
+			values = append(values, t)
+		}
+	}
+
+	return osin.AllowedAuthorizeType(values), nil
+}
+
+func newOauth2AllowedAccess(config *viper.Viper) (osin.AllowedAccessType, error) {
+	dupes := make(map[osin.AccessRequestType]bool, len(allowedAccessTypes))
+	values := make([]osin.AccessRequestType, 0, len(allowedAccessTypes))
+	slice := config.GetStringSlice("allow_access")
+
+	for _, v := range parseStringSlice(slice, len(allowedAccessTypes)) {
+		t, ok := allowedAccessTypes[v]
+		if !ok {
+			return nil, fmt.Errorf("invalid value %q for allowed access", v)
+		} else if _, dupe := dupes[t]; !dupe {
+			dupes[t] = true
+			values = append(values, t)
+		}
+	}
+
+	for _, t := range allowedAccessTypes {
+		if _, dupe := dupes[t]; dupe {
+			continue
+		} else if allowed := config.GetBool("allow_access_" + string(t)); allowed {
+			values = append(values, t)
+		}
+	}
+
+	return osin.AllowedAccessType(values), nil
+}
+
+func newOauth2Config(config *viper.Viper) (*osin.ServerConfig, error) {
+	auth, err := newOauth2AllowedAuthorize(config)
+	if err != nil {
+		return nil, err
+	}
+
+	acc, err := newOauth2AllowedAccess(config)
+	if err != nil {
+		return nil, err
+	}
+
+	cfg := osin.NewServerConfig()
+	cfg.AllowedAuthorizeTypes = auth
+	cfg.AllowedAccessTypes = acc
 	cfg.AuthorizationExpiration = config.GetInt32("authorization_expiration")
 	cfg.AccessExpiration = config.GetInt32("access_expiration")
 	cfg.ErrorStatusCode = config.GetInt("error_status_code")
