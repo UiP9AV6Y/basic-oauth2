@@ -6,10 +6,25 @@ import (
 
 type ValueParser func(string) (Value, error)
 
+type ValueComparator func(string, Value) bool
+
+func ConstantValueCompare(s string, v Value) bool {
+	input, err := v.Generate(s)
+	if err != nil {
+		return false
+	}
+
+	x := []byte(v.String())
+	y := []byte(input)
+
+	return (subtle.ConstantTimeCompare(x, y) == 1)
+}
+
 type CodecDelegator struct {
 	name      string
 	indicator string
-	parser    ValueParser
+	compare   ValueComparator
+	parse     ValueParser
 }
 
 func (d *CodecDelegator) Name() string {
@@ -21,17 +36,9 @@ func (d *CodecDelegator) Indicator() string {
 }
 
 func (d *CodecDelegator) ParseValue(s string) (Value, error) {
-	return d.parser(s)
+	return d.parse(s)
 }
 
 func (d *CodecDelegator) Compare(s string, v Value) bool {
-	input, err := v.Generate(s)
-	if err != nil {
-		return false
-	}
-
-	x := []byte(v.String())
-	y := []byte(input)
-
-	return (subtle.ConstantTimeCompare(x, y) == 1)
+	return d.compare(s, v)
 }

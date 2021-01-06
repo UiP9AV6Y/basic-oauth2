@@ -11,8 +11,9 @@ const (
 
 var shaCodec = &CodecDelegator{
 	name:      "SHA",
+	parse:     ParseSHAValue,
+	compare:   ConstantValueCompare,
 	indicator: SHAIndicator,
-	parser:    ParseSHAValue,
 }
 
 type SHAValue string

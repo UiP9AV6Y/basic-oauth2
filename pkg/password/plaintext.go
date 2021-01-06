@@ -6,8 +6,9 @@ import (
 )
 
 var plaintextCodec = &CodecDelegator{
-	name:   "Plaintext",
-	parser: ParsePlaintextValue,
+	name:    "Plaintext",
+	parse:   ParsePlaintextValue,
+	compare: ConstantValueCompare,
 }
 
 type PlaintextValue string
