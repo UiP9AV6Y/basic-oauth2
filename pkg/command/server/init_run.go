@@ -34,8 +34,8 @@ func initRunAllowedAccess(config *viper.Viper, flags *flag.FlagSet) {
 	c := "allow_access"
 
 	flags.StringSlice(f, allowedAccessTypes.FlagValues(), "Allowed access request types")
-	config.BindPFlag(f, flags.Lookup(f))
-	config.BindEnv(f)
+	config.BindPFlag(c, flags.Lookup(f))
+	config.BindEnv(c)
 
 	for key, allowed := range allowedAccessTypes {
 		aF := f + "-" + key
