@@ -1,0 +1,5 @@
+---
+
+with_email:
+  password: password
+  email: user@example.org
