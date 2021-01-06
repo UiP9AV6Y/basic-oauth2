@@ -24,7 +24,7 @@ var (
 	TokenEndpoint = "/token"
 )
 
-type HttpHandlerOptions struct {
+type OIDCRouterOptions struct {
 	PubKeys []jose.JSONWebKey
 	Signer  jose.Signer
 	Server  *osin.Server
@@ -40,8 +40,8 @@ type HttpHandlerOptions struct {
 	KeysBaseUrl  string
 }
 
-func NewHttpHandlerOptions(server *osin.Server, signer jose.Signer, publicKeys ...jose.JSONWebKey) *HttpHandlerOptions {
-	options := &HttpHandlerOptions{
+func NewOIDCRouterOptions(server *osin.Server, signer jose.Signer, publicKeys ...jose.JSONWebKey) *OIDCRouterOptions {
+	options := &OIDCRouterOptions{
 		Signer:  signer,
 		Server:  server,
 		PubKeys: publicKeys,
@@ -51,7 +51,7 @@ func NewHttpHandlerOptions(server *osin.Server, signer jose.Signer, publicKeys .
 	return options
 }
 
-func (o *HttpHandlerOptions) AuthorizeTypes() []string {
+func (o *OIDCRouterOptions) AuthorizeTypes() []string {
 	types := make([]string, len(o.Server.Config.AllowedAuthorizeTypes))
 	for i, t := range o.Server.Config.AllowedAuthorizeTypes {
 		types[i] = string(t)
@@ -60,7 +60,7 @@ func (o *HttpHandlerOptions) AuthorizeTypes() []string {
 	return types
 }
 
-func (o *HttpHandlerOptions) AccessTypes() []string {
+func (o *OIDCRouterOptions) AccessTypes() []string {
 	types := make([]string, len(o.Server.Config.AllowedAccessTypes))
 	for i, t := range o.Server.Config.AllowedAccessTypes {
 		types[i] = string(t)
@@ -69,7 +69,7 @@ func (o *HttpHandlerOptions) AccessTypes() []string {
 	return types
 }
 
-func (o *HttpHandlerOptions) DiscoveryData() map[string]interface{} {
+func (o *OIDCRouterOptions) DiscoveryData() map[string]interface{} {
 	data := map[string]interface{}{
 		"issuer":                                strings.TrimRight(o.IssuerUrl, "/"),
 		"authorization_endpoint":                UrlJoin(o.AuthBaseUrl, AuthEndpoint),
@@ -90,7 +90,7 @@ func (o *HttpHandlerOptions) DiscoveryData() map[string]interface{} {
 	return data
 }
 
-func (o *HttpHandlerOptions) SigningAlgorithms() []string {
+func (o *OIDCRouterOptions) SigningAlgorithms() []string {
 	algsUsed := make(map[string]bool)
 	signingAlgs := make([]string, 0, len(o.PubKeys))
 
@@ -104,8 +104,8 @@ func (o *HttpHandlerOptions) SigningAlgorithms() []string {
 	return signingAlgs
 }
 
-func (o *HttpHandlerOptions) Handler() (*HttpHandler, error) {
-	handler := &HttpHandler{
+func (o *OIDCRouterOptions) Router() (*OIDCRouter, error) {
+	handler := &OIDCRouter{
 		login:   o.Login,
 		logger:  o.Logger,
 		signer:  o.Signer,
@@ -132,7 +132,7 @@ func UrlJoin(base, path string) string {
 	return fmt.Sprintf("%s%s/%s", s, b, p)
 }
 
-type HttpHandler struct {
+type OIDCRouter struct {
 	logger  *log.Controller
 	pubKeys []jose.JSONWebKey
 	signer  jose.Signer
@@ -141,7 +141,7 @@ type HttpHandler struct {
 	login   principals.Authenticator
 }
 
-func (h *HttpHandler) Handler() *http.ServeMux {
+func (h *OIDCRouter) Handler() http.Handler {
 	mux := http.NewServeMux()
 
 	h.DecorateHandler(mux)
@@ -149,7 +149,7 @@ func (h *HttpHandler) Handler() *http.ServeMux {
 	return mux
 }
 
-func (h *HttpHandler) DecorateHandler(mux *http.ServeMux) {
+func (h *OIDCRouter) DecorateHandler(mux *http.ServeMux) {
 	mux.HandleFunc(DiscoEndpoint, h.HandleDiscovery)
 	mux.HandleFunc(KeysEndpoint, h.HandlePublicKeys)
 	mux.HandleFunc(TokenEndpoint, h.HandleToken)
@@ -159,7 +159,7 @@ func (h *HttpHandler) DecorateHandler(mux *http.ServeMux) {
 
 // handleDiscovery returns the OpenID Connect discovery object, allowing clients
 // to discover OAuth2 resources.
-func (h *HttpHandler) HandleDiscovery(w http.ResponseWriter, r *http.Request) {
+func (h *OIDCRouter) HandleDiscovery(w http.ResponseWriter, r *http.Request) {
 	resp := h.server.NewResponse()
 	defer resp.Close()
 
@@ -175,7 +175,7 @@ func (h *HttpHandler) HandleDiscovery(w http.ResponseWriter, r *http.Request) {
 
 // handlePublicKeys publishes the public part of this server's signing keys.
 // This allows clients to verify the signature of ID Tokens.
-func (h *HttpHandler) HandlePublicKeys(w http.ResponseWriter, r *http.Request) {
+func (h *OIDCRouter) HandlePublicKeys(w http.ResponseWriter, r *http.Request) {
 	resp := h.server.NewResponse()
 	defer resp.Close()
 
@@ -189,7 +189,7 @@ func (h *HttpHandler) HandlePublicKeys(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *HttpHandler) HandleInfo(w http.ResponseWriter, r *http.Request) {
+func (h *OIDCRouter) HandleInfo(w http.ResponseWriter, r *http.Request) {
 	resp := h.server.NewResponse()
 	defer resp.Close()
 
@@ -206,7 +206,7 @@ func (h *HttpHandler) HandleInfo(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *HttpHandler) HandleAuth(w http.ResponseWriter, r *http.Request) {
+func (h *OIDCRouter) HandleAuth(w http.ResponseWriter, r *http.Request) {
 	resp := h.server.NewResponse()
 	defer resp.Close()
 
@@ -240,7 +240,7 @@ func (h *HttpHandler) HandleAuth(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *HttpHandler) HandleToken(w http.ResponseWriter, r *http.Request) {
+func (h *OIDCRouter) HandleToken(w http.ResponseWriter, r *http.Request) {
 	resp := h.server.NewResponse()
 	defer resp.Close()
 
@@ -270,13 +270,13 @@ func (h *HttpHandler) HandleToken(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *HttpHandler) access(ar *osin.AccessRequest, r *http.Request) (*jwt.IDToken, bool) {
+func (h *OIDCRouter) access(ar *osin.AccessRequest, r *http.Request) (*jwt.IDToken, bool) {
 	idToken, _ := ar.UserData.(*jwt.IDToken)
 
 	return idToken, true
 }
 
-func (h *HttpHandler) encodeToken(w *osin.Response, token *jwt.IDToken) {
+func (h *OIDCRouter) encodeToken(w *osin.Response, token *jwt.IDToken) {
 	if token == nil {
 		return
 	}
@@ -292,7 +292,7 @@ func (h *HttpHandler) encodeToken(w *osin.Response, token *jwt.IDToken) {
 	}
 }
 
-func (h *HttpHandler) authorize(ar *osin.AuthorizeRequest, r *http.Request) (*jwt.IDToken, bool) {
+func (h *OIDCRouter) authorize(ar *osin.AuthorizeRequest, r *http.Request) (*jwt.IDToken, bool) {
 	principal, err := h.authenticate(ar, r)
 	if err != nil {
 		h.logger.Debug().Printf("authentication failed: %v", err)
@@ -320,7 +320,7 @@ func (h *HttpHandler) authorize(ar *osin.AuthorizeRequest, r *http.Request) (*jw
 	return nil, true
 }
 
-func (h *HttpHandler) authenticate(ar *osin.AuthorizeRequest, r *http.Request) (principal.Principal, error) {
+func (h *OIDCRouter) authenticate(ar *osin.AuthorizeRequest, r *http.Request) (principal.Principal, error) {
 	u, p, ok := r.BasicAuth()
 
 	if !ok {

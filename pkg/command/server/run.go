@@ -1,13 +1,12 @@
 package server
 
 import (
-	"fmt"
-	l "log"
+	"net/http"
 	"os"
 
+	gorilla "github.com/gorilla/handlers"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"gopkg.in/square/go-jose.v2"
 
 	"github.com/UiP9AV6Y/basic-oauth2/pkg/log"
 	"github.com/UiP9AV6Y/basic-oauth2/pkg/utils"
@@ -39,8 +38,9 @@ func NewRunCommand(config *viper.Viper) *cobra.Command {
 				return err
 			}
 
-			logger.Info().Printf("Listening for requests on %q", server.ListenAddr())
-			return server.Run(handler.Handler())
+			logger.Info().Println("Using config file", config.ConfigFileUsed())
+			logger.Info().Println("Listening for requests on", server.ListenAddr())
+			return server.Run(handler)
 		},
 		SuggestFor:   []string{"launch", "serve", "start"},
 		SilenceUsage: true,
@@ -85,8 +85,7 @@ func newLogger(config *viper.Viper) (*log.Controller, error) {
 		return nil, err
 	}
 
-	logger := l.New(os.Stderr, "", 0)
-	controller := log.NewController(level, logger)
+	controller := log.NewPlainController(level, os.Stderr)
 
 	return controller, nil
 }
@@ -101,42 +100,17 @@ func newServer(config *viper.Viper) (*web.Server, error) {
 	return server, nil
 }
 
-func newHandler(config *viper.Viper, logger *log.Controller) (*web.HttpHandler, error) {
-	server, err := newOauth2Server(config, logger)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create oauth2 server: %w", err)
-	}
-
-	keyname, secret, err := newOauth2Secret(config, logger)
-	if err != nil {
-		return nil, fmt.Errorf("secret %q is not parseable: %w", keyname, err)
-	}
-
-	signer, err := secret.NewSigner()
-	if err != nil {
-		return nil, fmt.Errorf("failed to create jwtSigner: %w", err)
-	}
-
-	publicKey, err := secret.NewPublicKey()
-	if err != nil {
-		return nil, fmt.Errorf("failed to create public key: %w", err)
-	}
-
-	login, err := newAuthenticator(config)
+func newHandler(config *viper.Viper, logger *log.Controller) (http.Handler, error) {
+	oidc, err := newOIDCRouter(config, logger)
 	if err != nil {
 		return nil, err
 	}
 
-	handlerBuilder := newWebHandler(config)
-	handlerBuilder.PubKeys = []jose.JSONWebKey{*publicKey}
-	handlerBuilder.Server = server
-	handlerBuilder.Signer = signer
-	handlerBuilder.Logger = logger
-	handlerBuilder.Login = login
-	handler, err := handlerBuilder.Handler()
-	if err != nil {
-		return nil, err
-	}
+	oidcHandler := oidc.Handler()
+	recoverHandler := gorilla.RecoveryHandler(
+		gorilla.RecoveryLogger(logger.Fatal()),
+	)(oidcHandler)
+	logHandler := gorilla.LoggingHandler(os.Stdout, recoverHandler)
 
-	return handler, nil
+	return logHandler, nil
 }

@@ -42,7 +42,7 @@ func (s *Server) ListenAddr() string {
 	return s.listener.Addr().String()
 }
 
-func (s *Server) Run(handler *http.ServeMux) error {
+func (s *Server) Run(handler http.Handler) error {
 	srv := &http.Server{
 		Addr:    s.ListenAddr(),
 		Handler: handler,

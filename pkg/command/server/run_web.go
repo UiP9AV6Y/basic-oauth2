@@ -18,7 +18,7 @@ func newWebServer(config *viper.Viper) *web.ServerOptions {
 	return server
 }
 
-func newWebHandler(config *viper.Viper) *web.HttpHandlerOptions {
+func newWebRouter(config *viper.Viper) *web.OIDCRouterOptions {
 	address := config.GetString("listen_address")
 	if address == "0.0.0.0" {
 		address = "127.0.0.1"
@@ -57,7 +57,7 @@ func newWebHandler(config *viper.Viper) *web.HttpHandlerOptions {
 		keysBaseUrl = issuerUrl
 	}
 
-	handler := &web.HttpHandlerOptions{
+	handler := &web.OIDCRouterOptions{
 		IssuerUrl:    issuerUrl,
 		AuthBaseUrl:  authBaseUrl,
 		InfoBaseUrl:  infoBaseUrl,

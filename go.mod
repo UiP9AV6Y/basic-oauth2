@@ -6,6 +6,7 @@ require (
 	github.com/UiP9AV6Y/changelog-assembler v0.0.0-20200621174502-7d67436ae95c
 	github.com/golangci/golangci-lint v1.33.0
 	github.com/google/uuid v1.1.1 // indirect
+	github.com/gorilla/handlers v1.5.1
 	github.com/openshift/osin v1.0.1
 	github.com/pborman/uuid v1.2.1 // indirect
 	github.com/spf13/cobra v1.1.1
