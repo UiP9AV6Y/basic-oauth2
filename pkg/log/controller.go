@@ -1,6 +1,7 @@
 package log
 
 import (
+	"io"
 	l "log"
 )
 
@@ -12,6 +13,12 @@ type Controller struct {
 	warn  *Facility
 	error *Facility
 	fatal *Facility
+}
+
+func NewPlainController(level Level, out io.Writer) *Controller {
+	logger := l.New(out, "", 0)
+
+	return NewController(level, logger)
 }
 
 func NewController(level Level, logger *l.Logger) *Controller {
