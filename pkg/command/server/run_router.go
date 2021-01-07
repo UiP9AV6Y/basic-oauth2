@@ -10,6 +10,12 @@ import (
 	"github.com/UiP9AV6Y/basic-oauth2/pkg/web"
 )
 
+func newHealthRouter(config *viper.Viper, logger *log.Controller) (*web.HealthRouter, error) {
+	router := web.NewHealthRouter(logger)
+
+	return router, nil
+}
+
 func newOIDCRouter(config *viper.Viper, logger *log.Controller) (*web.OIDCRouter, error) {
 	server, err := newOauth2Server(config, logger)
 	if err != nil {
@@ -36,16 +42,16 @@ func newOIDCRouter(config *viper.Viper, logger *log.Controller) (*web.OIDCRouter
 		return nil, err
 	}
 
-	handlerBuilder := newWebRouter(config)
-	handlerBuilder.PubKeys = []jose.JSONWebKey{*publicKey}
-	handlerBuilder.Server = server
-	handlerBuilder.Signer = signer
-	handlerBuilder.Logger = logger
-	handlerBuilder.Login = login
-	handler, err := handlerBuilder.Router()
+	routerBuilder := newWebRouter(config)
+	routerBuilder.PubKeys = []jose.JSONWebKey{*publicKey}
+	routerBuilder.Server = server
+	routerBuilder.Signer = signer
+	routerBuilder.Logger = logger
+	routerBuilder.Login = login
+	router, err := routerBuilder.Router()
 	if err != nil {
 		return nil, err
 	}
 
-	return handler, nil
+	return router, nil
 }

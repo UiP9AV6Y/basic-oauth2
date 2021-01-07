@@ -16,7 +16,7 @@ import (
 	"github.com/UiP9AV6Y/basic-oauth2/pkg/utils"
 )
 
-var (
+const (
 	DiscoEndpoint = "/.well-known/openid-configuration"
 	KeysEndpoint  = "/.well-known/jwks.json"
 	AuthEndpoint  = "/authorize"

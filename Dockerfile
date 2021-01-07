@@ -21,7 +21,7 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /build/ /bin/
 
 HEALTHCHECK --timeout=5s --start-period=5s \
-  CMD ["/bin/basic-oauth", "server", "health"]
+  CMD ["/bin/basic-oauth2", "server", "health"]
 
 ENTRYPOINT ["/bin/basic-oauth2"]
 CMD ["server", "run"]

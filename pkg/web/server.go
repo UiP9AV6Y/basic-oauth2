@@ -38,13 +38,17 @@ type Server struct {
 	listener net.Listener
 }
 
-func (s *Server) ListenAddr() string {
+func (s *Server) Network() string {
+	return s.listener.Addr().Network()
+}
+
+func (s *Server) String() string {
 	return s.listener.Addr().String()
 }
 
 func (s *Server) Run(handler http.Handler) error {
 	srv := &http.Server{
-		Addr:    s.ListenAddr(),
+		Addr:    s.listener.Addr().String(),
 		Handler: handler,
 	}
 

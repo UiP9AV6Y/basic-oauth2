@@ -39,7 +39,7 @@ func NewRunCommand(config *viper.Viper) *cobra.Command {
 			}
 
 			logger.Info().Println("Using config file", config.ConfigFileUsed())
-			logger.Info().Println("Listening for requests on", server.ListenAddr())
+			logger.Info().Println("Listening for requests on", server.String())
 			return server.Run(handler)
 		},
 		SuggestFor:   []string{"launch", "serve", "start"},
@@ -106,10 +106,18 @@ func newHandler(config *viper.Viper, logger *log.Controller) (http.Handler, erro
 		return nil, err
 	}
 
-	oidcHandler := oidc.Handler()
+	health, err := newHealthRouter(config, logger)
+	if err != nil {
+		return nil, err
+	}
+
+	rootHandler := http.NewServeMux()
+	oidc.DecorateHandler(rootHandler)
+	health.DecorateHandler(rootHandler)
+
 	recoverHandler := gorilla.RecoveryHandler(
 		gorilla.RecoveryLogger(logger.Fatal()),
-	)(oidcHandler)
+	)(rootHandler)
 	logHandler := gorilla.LoggingHandler(os.Stdout, recoverHandler)
 
 	return logHandler, nil
