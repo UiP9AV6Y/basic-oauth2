@@ -1,5 +1,7 @@
 
 GO ?= go
+GIT ?= git
+DOCKER ?= docker
 GOLINT ?= golangci-lint
 GOFMT ?= goimports
 INSTALL ?= install
@@ -11,11 +13,12 @@ ifneq ($(word 2,$(VCS_META)),0)
 VERSION := $(VERSION)-dev
 endif
 endif
+CODE_ORIGIN ?= $(shell $(GIT) config --get remote.origin.url 2>/dev/null || grep module go.mod | cut -d' ' -f2)
 COMMIT ?= $(shell $(GIT) rev-parse --short HEAD 2>/dev/null || echo HEAD)
 BUILD_DATE ?= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 SOURCE_DATE_EPOCH ?= $(shell $(GIT) log -1 --format='%ct' 2>/dev/null || echo 0)
 
-GO_MODULE := $(shell $(GO) list -m)
+GO_MODULE := $(shell $(GO) list -m 2>/dev/null || grep module go.mod | cut -d' ' -f2)
 GO_SOURCES := $(shell find . -path './.*' -prune -o -name '*.go' -print)
 GO_CMDS := $(notdir $(wildcard ./cmd/*))
 
@@ -39,6 +42,8 @@ endif
 PREFIX ?= /usr
 DOCKER_REGISTRY ?= docker.io
 DOCKER_REPOSITORY ?= UiP9AV6Y/$(PROJECT_NAME)
+DOCKER_TAG ?= latest
+DOCKERFILE_PATH ?= Dockerfile
 
 .PHONY: default
 default: all
@@ -64,6 +69,17 @@ test: $(GO_SOURCES)
 
 .PHONY: build
 build: $(addprefix $(BUILD_DIR)/,$(GO_CMDS))
+
+.PHONY: docker-image
+docker-image:
+	$(DOCKER) build \
+		--build-arg "BUILD_DATE=$(BUILD_DATE)" \
+		--build-arg "VERSION=$(VERSION)" \
+		--build-arg "VCS_REF=$(COMMIT)" \
+		--build-arg "VCS_URL=$(CODE_ORIGIN)" \
+		-f $(DOCKERFILE_PATH) \
+		-t $(DOCKER_REGISTRY)/$(DOCKER_REPOSITORY):$(DOCKER_TAG) \
+		.
 
 .PHONY: build-deps
 build-deps:
