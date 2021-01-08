@@ -12,7 +12,6 @@ import (
 	"github.com/UiP9AV6Y/basic-oauth2/pkg/jwt"
 	"github.com/UiP9AV6Y/basic-oauth2/pkg/log"
 	"github.com/UiP9AV6Y/basic-oauth2/pkg/principal"
-	principals "github.com/UiP9AV6Y/basic-oauth2/pkg/principal"
 	"github.com/UiP9AV6Y/basic-oauth2/pkg/utils"
 )
 
@@ -31,7 +30,7 @@ type OIDCRouterOptions struct {
 
 	Logger *log.Controller
 
-	Login principals.Authenticator
+	Login principal.Authenticator
 
 	IssuerUrl    string
 	AuthBaseUrl  string
@@ -138,7 +137,7 @@ type OIDCRouter struct {
 	signer  jose.Signer
 	server  *osin.Server
 	disco   map[string]interface{}
-	login   principals.Authenticator
+	login   principal.Authenticator
 }
 
 func (h *OIDCRouter) Handler() http.Handler {
@@ -302,7 +301,7 @@ func (h *OIDCRouter) authorize(ar *osin.AuthorizeRequest, r *http.Request) (*jwt
 	scopes := utils.MapFields(ar.Scope)
 
 	if scopes["openid"] {
-		issuer, _ := h.disco["issuer"]
+		issuer := h.disco["issuer"]
 		idToken := jwt.NewIDToken(principal.GetIdent(), time.Hour)
 
 		idToken.Issuer = issuer.(string)

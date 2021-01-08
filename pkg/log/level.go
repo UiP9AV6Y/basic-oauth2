@@ -28,7 +28,7 @@ const (
 )
 
 func ParseLevelVerbosity(verbosity int) (level Level, err error) {
-	for v, _ := range levelNames {
+	for v := range levelNames {
 		if v == verbosity {
 			level = Level(v)
 			return

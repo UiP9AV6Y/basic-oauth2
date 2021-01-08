@@ -56,9 +56,7 @@ func parseStringSlice(slice []string, l int) []string {
 
 	for _, v := range slice {
 		p := strings.Split(v, ",")
-		for _, f := range p {
-			values = append(values, f)
-		}
+		values = append(values, p...)
 	}
 
 	return values

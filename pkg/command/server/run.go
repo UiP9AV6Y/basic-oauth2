@@ -46,7 +46,7 @@ func NewRunCommand(config *viper.Viper) *cobra.Command {
 		SilenceUsage: true,
 	}
 
-	config.BindEnv("key_file")
+	_ = config.BindEnv("key_file")
 	initRunKeySeed(config, cmd.Flags())
 	initRunKeySize(config, cmd.Flags())
 	initRunKeyGenerate(config, cmd.Flags())
@@ -67,6 +67,7 @@ func NewRunCommand(config *viper.Viper) *cobra.Command {
 	initRunTokenBaseUrl(config, cmd.Flags())
 	initRunKeysBaseUrl(config, cmd.Flags())
 	initRunEmailDomain(config, cmd.Flags())
+	initRunEmailVerified(config, cmd.Flags())
 
 	return cmd
 }

@@ -12,18 +12,18 @@ const (
 
 func initServerPort(config *viper.Viper, flags *flag.FlagSet) {
 	flags.Int("port", ServerPort, "Port to bind to")
-	config.BindPFlag("listen_port", flags.Lookup("port"))
-	config.BindEnv("listen_port")
+	_ = config.BindPFlag("listen_port", flags.Lookup("port"))
+	_ = config.BindEnv("listen_port")
 }
 
 func initServerAddress(config *viper.Viper, flags *flag.FlagSet) {
 	flags.String("address", ServerAddress, "Address to bind to")
-	config.BindPFlag("listen_address", flags.Lookup("address"))
-	config.BindEnv("listen_address")
+	_ = config.BindPFlag("listen_address", flags.Lookup("address"))
+	_ = config.BindEnv("listen_address")
 }
 
 func initServerSocket(config *viper.Viper, flags *flag.FlagSet) {
 	flags.String("socket", "", "Unix socket to bind to")
-	config.BindPFlag("listen_socket", flags.Lookup("socket"))
-	config.BindEnv("listen_socket")
+	_ = config.BindPFlag("listen_socket", flags.Lookup("socket"))
+	_ = config.BindEnv("listen_socket")
 }

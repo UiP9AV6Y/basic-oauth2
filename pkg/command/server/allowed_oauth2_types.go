@@ -10,7 +10,7 @@ func (t authorizeTypes) FlagValues() []string {
 	var i int
 	values := make([]string, len(t))
 
-	for k, _ := range t {
+	for k := range t {
 		values[i] = k
 		i++
 	}
@@ -29,7 +29,7 @@ func (t accessTypes) FlagValues() []string {
 	var i int
 	values := make([]string, len(t))
 
-	for k, _ := range t {
+	for k := range t {
 		values[i] = k
 		i++
 	}
