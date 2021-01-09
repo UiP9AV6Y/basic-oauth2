@@ -1,0 +1,14 @@
+#!/bin/bash
+set -eu
+
+GIT_TAG=$(git tag --points-at "$SOURCE_COMMIT")
+MAKE_TARGETS=("docker-deploy")
+
+if test -n "$GIT_TAG"; then
+  MAKE_TARGETS+=("docker-deploy-version")
+fi
+
+make "${MAKE_TARGETS[@]}" \
+  "DOCKER_TAG=${DOCKER_TAG}" \
+  "DOCKER_IMAGE=${DOCKER_REPO}" \
+  "DOCKERFILE_PATH=${DOCKERFILE_PATH}"

@@ -41,11 +41,10 @@ endif
 
 PREFIX ?= /usr
 DOCKER_REGISTRY ?= docker.io
-DOCKER_REPOSITORY ?= UiP9AV6Y/$(PROJECT_NAME)
+DOCKER_REPOSITORY ?= uip9av6y/$(PROJECT_NAME)
 DOCKER_TAG ?= latest
 DOCKERFILE_PATH ?= Dockerfile
 DOCKER_IMAGE ?= $(DOCKER_REGISTRY)/$(DOCKER_REPOSITORY)
-DOCKER_FQIN := $(DOCKER_IMAGE):$(DOCKER_TAG)
 
 .PHONY: default
 default: all
@@ -80,8 +79,23 @@ docker-image:
 		--build-arg "VCS_REF=$(COMMIT)" \
 		--build-arg "VCS_URL=$(CODE_ORIGIN)" \
 		-f $(DOCKERFILE_PATH) \
-		-t $(DOCKER_FQIN) \
+		-t $(DOCKER_IMAGE):$(DOCKER_TAG) \
 		.
+
+.PHONY: docker-deploy
+docker-deploy: DOCKER_DEPLOY_TAG := $(DOCKER_TAG)
+docker-deploy:
+	$(DOCKER) tag \
+		$(DOCKER_IMAGE):$(DOCKER_TAG) \
+		$(DOCKER_IMAGE):$(DOCKER_DEPLOY_TAG)
+	$(DOCKER) push \
+		$(DOCKER_IMAGE):$(DOCKER_DEPLOY_TAG)
+
+.PHONY: docker-deploy-version
+docker-deploy-version: VERSION_META := $(subst ., ,$(VERSION))
+docker-deploy-version:
+	$(MAKE) docker-deploy DOCKER_DEPLOY_TAG=$(word 1,$(VERSION_META))
+	$(MAKE) docker-deploy DOCKER_DEPLOY_TAG=$(word 1,$(VERSION_META)).$(word 2,$(VERSION_META))
 
 .PHONY: build-deps
 build-deps:
