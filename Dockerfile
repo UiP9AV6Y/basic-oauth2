@@ -28,8 +28,8 @@ LABEL org.opencontainers.image.title="basic-oauth2" \
   org.opencontainers.image.vendor="Gordon Bleux" \
   org.opencontainers.image.licenses="Apache-2.0"
 
-ENV XDG_CONFIG_HOME=/etc/basic-oauth2
-COPY config/ ${XDG_CONFIG_HOME}/
+ENV XDG_CONFIG_HOME=/etc
+COPY config/ ${XDG_CONFIG_HOME}/basic-oauth2/
 
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /build/ /bin/
