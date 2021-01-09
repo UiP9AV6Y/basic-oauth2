@@ -13,7 +13,7 @@ ifneq ($(word 2,$(VCS_META)),0)
 VERSION := $(VERSION)-dev
 endif
 endif
-CODE_ORIGIN ?= $(shell $(GIT) config --get remote.origin.url 2>/dev/null || grep module go.mod | cut -d' ' -f2)
+SOURCE_ORIGIN ?= $(shell $(GIT) config --get remote.origin.url 2>/dev/null || grep module go.mod | cut -d' ' -f2)
 COMMIT ?= $(shell $(GIT) rev-parse --short HEAD 2>/dev/null || echo HEAD)
 BUILD_DATE ?= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 SOURCE_DATE_EPOCH ?= $(shell $(GIT) log -1 --format='%ct' 2>/dev/null || echo 0)
@@ -77,7 +77,7 @@ docker-image:
 		--build-arg "BUILD_DATE=$(BUILD_DATE)" \
 		--build-arg "VERSION=$(VERSION)" \
 		--build-arg "VCS_REF=$(COMMIT)" \
-		--build-arg "VCS_URL=$(CODE_ORIGIN)" \
+		--build-arg "VCS_URL=$(SOURCE_ORIGIN)" \
 		-f $(DOCKERFILE_PATH) \
 		-t $(DOCKER_IMAGE):$(DOCKER_TAG) \
 		.
