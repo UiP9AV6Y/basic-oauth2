@@ -44,6 +44,8 @@ DOCKER_REGISTRY ?= docker.io
 DOCKER_REPOSITORY ?= UiP9AV6Y/$(PROJECT_NAME)
 DOCKER_TAG ?= latest
 DOCKERFILE_PATH ?= Dockerfile
+DOCKER_IMAGE ?= $(DOCKER_REGISTRY)/$(DOCKER_REPOSITORY)
+DOCKER_FQIN := $(DOCKER_IMAGE):$(DOCKER_TAG)
 
 .PHONY: default
 default: all
@@ -78,7 +80,7 @@ docker-image:
 		--build-arg "VCS_REF=$(COMMIT)" \
 		--build-arg "VCS_URL=$(CODE_ORIGIN)" \
 		-f $(DOCKERFILE_PATH) \
-		-t $(DOCKER_REGISTRY)/$(DOCKER_REPOSITORY):$(DOCKER_TAG) \
+		-t $(DOCKER_FQIN) \
 		.
 
 .PHONY: build-deps
